@@ -173,13 +173,59 @@ table td{
     color:#92400e;
 }
 
-@media(max-width:1400px){
-    .container{
-        grid-template-columns:1fr;
+/* ========== PRINT STYLES - FIXED ========== */
+@media print {
+    /* Hide everything except the output panel content */
+    .form-panel,
+    .print,
+    h1,
+    .credit,
+    .container > .panel:first-child,
+    .container > .panel:nth-child(2),
+    button,
+    .loading {
+        display: none !important;
     }
-    .form-panel{
-        position:relative;
-        height:auto;
+    
+    /* Make output panel take full width */
+    .container {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .output-panel {
+        display: block !important;
+        max-height: none !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        background: white !important;
+    }
+    
+    /* Remove any backgrounds, shadows for clean print */
+    .panel, body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Ensure text is readable */
+    body, .output-panel, #output {
+        background: white !important;
+        color: black !important;
+    }
+    
+    /* Keep page breaks reasonable */
+    .lesson-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    h2, h3 {
+        page-break-after: avoid;
+        break-after: avoid;
     }
 }
 </style>
@@ -187,7 +233,7 @@ table td{
 <body>
 
 <h1>Lesson Plan Generator V3</h1>
-<p class="credit">Made by John Alexis</p>
+<p class="credit">Made by John Alexis | UbD Format: EXPLORE → FIRM-UP → DEEPEN → TRANSFER</p>
 
 <div class="container">
 
@@ -196,13 +242,13 @@ table td{
 <h2>Lesson Plan Generator</h2>
 
 <label>Grade Level</label>
-<input type="text" id="grade" placeholder="e.g., Grade 10">
+<input type="text" id="grade" placeholder="e.g., Grade 9">
 
 <label>Quarter</label>
 <input type="text" id="quarter" placeholder="e.g., 1st Quarter">
 
 <label>Subject</label>
-<input type="text" id="subject" placeholder="e.g., Science">
+<input type="text" id="subject" placeholder="e.g., Mathematics">
 
 <label>Content Standard</label>
 <textarea id="contentStandard" placeholder="The learners demonstrate understanding of..."></textarea>
@@ -236,7 +282,7 @@ table td{
 <input type="text" id="promptGrade" placeholder="e.g., Grade 9">
 
 <label>Quarter</label>
-<input type="text" id="promptQuarter" placeholder="e.g., 2nd Quarter">
+<input type="text" id="promptQuarter" placeholder="e.g., 1st Quarter">
 
 <label>Subject</label>
 <input type="text" id="promptSubject" placeholder="e.g., Mathematics">
@@ -253,9 +299,9 @@ table td{
 
 <!-- PANEL 3: OUTPUT -->
 <div class="panel output-panel">
-<button class="print" onclick="window.print()">Download / Print</button>
+<button class="print" onclick="handlePrint()">🖨️ Download / Print Lesson Plan</button>
 <div id="output">
-<p>Your generated lesson plan will appear here.</p>
+<p style="background:#f8fafc; padding:40px; text-align:center; border-radius:20px;">✨ Your detailed, standards-based lesson plan will appear here after clicking "Generate Lesson Plan".</p>
 </div>
 </div>
 
@@ -332,362 +378,513 @@ function resetForm(){
     document.getElementById("makeMeaning").value = "";
     document.getElementById("transfer").value = "";
 
-    document.getElementById("output").innerHTML = "<p>Your generated lesson plan will appear here.</p>";
+    document.getElementById("output").innerHTML = "<p style='background:#f8fafc; padding:40px; text-align:center; border-radius:20px;'>✨ Your detailed, standards-based lesson plan will appear here after clicking 'Generate Lesson Plan'.</p>";
 }
 
 // ============================================================
-// MAIN LESSON PLAN GENERATOR (DETAILED 1000+ LINE LOGIC)
+// PRINT FUNCTION - FIXED
+// ============================================================
+function handlePrint() {
+    // Get the output content
+    const outputContent = document.getElementById("output").innerHTML;
+    
+    // Check if there's actual content or just placeholder
+    if(outputContent.includes("will appear here")) {
+        alert("Please generate a lesson plan first before printing.");
+        return;
+    }
+    
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    
+    // Get current date for the printout
+    const now = new Date();
+    const dateStr = now.toLocaleDateString();
+    
+    // Get lesson info for title
+    const grade = document.getElementById("grade").value || "Lesson Plan";
+    const subject = document.getElementById("subject").value || "";
+    const quarter = document.getElementById("quarter").value || "";
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Lesson Plan - ${grade} ${subject} ${quarter}</title>
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    font-family: Arial, sans-serif;
+                }
+                body {
+                    padding: 20px;
+                    background: white;
+                    color: black;
+                }
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    padding-bottom: 20px;
+                    border-bottom: 2px solid #1e293b;
+                }
+                .print-header h1 {
+                    color: #1e293b;
+                    margin-bottom: 5px;
+                }
+                .print-header p {
+                    color: #475569;
+                }
+                .lesson-section {
+                    margin-bottom: 40px;
+                    page-break-inside: avoid;
+                    break-inside: avoid;
+                }
+                h2 {
+                    background: #1e293b;
+                    color: white;
+                    padding: 10px;
+                    border-radius: 8px;
+                    margin-bottom: 15px;
+                }
+                h3 {
+                    color: #0f172a;
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                }
+                p {
+                    line-height: 1.7;
+                    margin-bottom: 10px;
+                }
+                ul, ol {
+                    margin-left: 25px;
+                    margin-bottom: 15px;
+                    line-height: 1.7;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 10px;
+                    margin-bottom: 20px;
+                }
+                table th, table td {
+                    border: 1px solid #333;
+                    padding: 10px;
+                    vertical-align: top;
+                }
+                .badge {
+                    display: inline-block;
+                    background: #dbeafe;
+                    color: #1d4ed8;
+                    padding: 5px 10px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    margin-bottom: 10px;
+                }
+                .footer {
+                    margin-top: 50px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #64748b;
+                    border-top: 1px solid #cbd5e1;
+                    padding-top: 20px;
+                }
+                @media print {
+                    body {
+                        padding: 0;
+                    }
+                    .no-print {
+                        display: none;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-header">
+                <h1>📋 Detailed Lesson Plan</h1>
+                <p>Grade: ${grade} | Quarter: ${quarter} | Subject: ${subject}</p>
+                <p>Generated on: ${dateStr}</p>
+            </div>
+            ${outputContent}
+            <div class="footer">
+                <p>Lesson Plan Generator V3 | Created by John Alexis</p>
+            </div>
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() { window.close(); }, 500);
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+}
+
+// ============================================================
+// MAIN LESSON PLAN GENERATOR (DETAILED LOGIC)
 // Follows EXPLORE → FIRM-UP → DEEPEN → TRANSFER structure
 // ============================================================
 function generateLesson(){
     // Get all input values
-    const grade = document.getElementById("grade").value;
-    const quarter = document.getElementById("quarter").value;
-    const subject = document.getElementById("subject").value;
+    const grade = document.getElementById("grade").value || "Not specified";
+    const quarter = document.getElementById("quarter").value || "Not specified";
+    const subject = document.getElementById("subject").value || "General";
     const contentStd = document.getElementById("contentStandard").value;
     const perfStd = document.getElementById("performanceStandard").value;
     const acquisitionRaw = document.getElementById("acquisition").value;
     const makeMeaningRaw = document.getElementById("makeMeaning").value;
     const transferRaw = document.getElementById("transfer").value;
 
-    // Parse acquisition and make meaning into arrays
-    let acquisitionList = acquisitionRaw.split("\n").filter(line => line.trim().length > 0);
-    let makeMeaningList = makeMeaningRaw.split("\n").filter(line => line.trim().length > 0);
+    // Show loading indicator
+    document.getElementById("loading").style.display = "block";
 
-    // If empty, provide defaults
-    if(acquisitionList.length === 0){
-        acquisitionList = ["Define key concepts", "Identify core principles", "Apply in guided activities"];
-    }
-    if(makeMeaningList.length === 0){
-        makeMeaningList = ["Analyze real-world applications", "Evaluate different approaches", "Justify conclusions"];
-    }
+    // Small delay to show loading
+    setTimeout(() => {
+        // Parse acquisition and make meaning into arrays
+        let acquisitionList = acquisitionRaw.split("\n").filter(line => line.trim().length > 0);
+        let makeMeaningList = makeMeaningRaw.split("\n").filter(line => line.trim().length > 0);
 
-    const topic = extractTopic(contentStd, subject);
+        // If empty, provide defaults
+        if(acquisitionList.length === 0){
+            acquisitionList = ["Define key concepts", "Identify core principles", "Apply in guided activities"];
+        }
+        if(makeMeaningList.length === 0){
+            makeMeaningList = ["Analyze real-world applications", "Evaluate different approaches", "Justify conclusions"];
+        }
 
-    // Start building the detailed lesson plan
-    let outputHTML = `
-    <div class="lesson-section">
-        <span class="badge">📋 UbD Aligned Lesson Plan | ${quarter} | ${grade}</span>
-        <h2>${subject} Lesson Plan: ${topic}</h2>
-        <p><strong>Grade Level:</strong> ${grade} | <strong>Quarter:</strong> ${quarter} | <strong>Subject:</strong> ${subject}</p>
-    </div>
+        const topic = extractTopic(contentStd, subject);
 
-    <!-- ==================== EXPLORE SECTION ==================== -->
-    <div class="lesson-section">
-        <h2>🔍 EXPLORE</h2>
-        
-        <h3>Topic:</h3>
-        <p>${topic}</p>
-        
-        <h3>Content Standard:</h3>
-        <p>${contentStd || "The learners demonstrate understanding of core concepts and principles."}</p>
-        
-        <h3>Performance Standard:</h3>
-        <p>${perfStd || "The learners shall be able to apply learning to real-life situations."}</p>
-        
-        <h3>Overview / Introduction:</h3>
-        <p>This unit on ${topic} is designed to help ${grade} students develop a deep understanding of key concepts and their applications. The unit will guide learners through an inquiry-based journey where they will explore fundamental ideas, engage in hands-on activities, and connect their learning to real-world contexts. Students will discover how ${topic} relates to their daily lives and future careers.</p>
-        <p>Throughout this unit, learners will move from basic knowledge acquisition to meaningful application and ultimately to authentic transfer of learning. The lessons are structured to promote critical thinking, collaboration, and creativity. By the end of this unit, students will not only understand ${topic} but will also be able to apply their learning independently to solve problems and create innovative solutions.</p>
-        
-        <h3>Learning Objectives (at least 10):</h3>
-        <ol>
-            <li>Define and explain the key concepts related to ${topic}.</li>
-            <li>Identify the important principles and components of ${topic}.</li>
-            <li>Apply concepts of ${topic} to solve basic problems.</li>
-            <li>Analyze situations where ${topic} is applied in real life.</li>
-            <li>Evaluate different approaches and strategies related to ${topic}.</li>
-            <li>Create original outputs demonstrating understanding of ${topic}.</li>
-            <li>Justify conclusions using evidence from ${topic} concepts.</li>
-            <li>Collaborate with peers to investigate ${topic} phenomena.</li>
-            <li>Communicate ideas about ${topic} clearly using appropriate terminology.</li>
-            <li>Reflect on personal learning and identify areas for growth regarding ${topic}.</li>
-        </ol>
-        
-        <h3>Essential Question:</h3>
-        <p><strong><em>How does understanding ${topic} help us navigate and improve the world around us?</em></strong></p>
-        
-        <h3>Hook Activity (Situational):</h3>
-        <p><strong>Scenario:</strong> Imagine you encounter a real-life situation that requires knowledge of ${topic}. ${generateHookScenario(topic)} Students will share initial thoughts and questions, creating curiosity and engagement before diving into the content.</p>
-        
-        <h3>Guide Questions:</h3>
-        <ul>
-            <li>What do you already know about ${topic}?</li>
-            <li>Where do we see ${topic} in our daily lives?</li>
-            <li>Why is it important to learn about ${topic}?</li>
-            <li>What questions do you have about ${topic}?</li>
-        </ul>
-        
-        <h3>Map of Conceptual Change:</h3>
-        <p>Students will complete a pre-assessment to identify prior knowledge and misconceptions about ${topic}. Throughout the unit, they will revisit and revise their understanding, documenting how their concepts have evolved.</p>
-    </div>
+        // Start building the detailed lesson plan
+        let outputHTML = `
+        <div class="lesson-section">
+            <span class="badge">📋 UbD Aligned Lesson Plan | ${quarter} | ${grade}</span>
+            <h2>${subject} Lesson Plan: ${topic}</h2>
+            <p><strong>Grade Level:</strong> ${grade} | <strong>Quarter:</strong> ${quarter} | <strong>Subject:</strong> ${subject}</p>
+        </div>
 
-    <!-- ==================== FIRM-UP SECTION (ACQUISITION) ==================== -->
-    <div class="lesson-section">
-        <h2>📚 FIRM-UP (Acquisition Phase)</h2>
-    `;
-
-    // Generate FIRM-UP for each acquisition item
-    for(let i = 0; i < acquisitionList.length; i++){
-        const acq = acquisitionList[i].trim();
-        const lcNumber = i + 1;
-        
-        outputHTML += `
-        <div style="margin-bottom: 40px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
-            <h3>LC ${lcNumber}: ${acq}</h3>
+        <!-- ==================== EXPLORE SECTION ==================== -->
+        <div class="lesson-section">
+            <h2>🔍 EXPLORE</h2>
             
-            <h4>Learning Targets:</h4>
-            <ul>
-                <li>I can define and explain ${acq.toLowerCase()}.</li>
-                <li>I can provide examples of ${acq.toLowerCase()} in different contexts.</li>
-                <li>I can apply ${acq.toLowerCase()} to solve guided problems.</li>
-            </ul>
+            <h3>Topic:</h3>
+            <p>${topic}</p>
             
-            <h4>Success Criteria:</h4>
-            <ul>
-                <li>I have accurately defined key terms related to ${acq.toLowerCase()}.</li>
-                <li>I have completed the activity with at least 80% accuracy.</li>
-                <li>I can explain my reasoning and steps to a peer.</li>
-            </ul>
+            <h3>Content Standard:</h3>
+            <p>${contentStd || "The learners demonstrate understanding of core concepts and principles."}</p>
             
-            <h4>Look For (Teacher Observations):</h4>
-            <ul>
-                <li>Students using correct terminology when discussing ${acq.toLowerCase()}.</li>
-                <li>Students making connections between new concepts and prior knowledge.</li>
-                <li>Students asking thoughtful questions that show engagement.</li>
-            </ul>
+            <h3>Performance Standard:</h3>
+            <p>${perfStd || "The learners shall be able to apply learning to real-life situations."}</p>
             
-            <h4>Activity Title: "${getActivityTitle(acq, lcNumber)}"</h4>
+            <h3>Overview / Introduction:</h3>
+            <p>This unit on ${topic} is designed to help ${grade} students develop a deep understanding of key concepts and their applications. The unit will guide learners through an inquiry-based journey where they will explore fundamental ideas, engage in hands-on activities, and connect their learning to real-world contexts. Students will discover how ${topic} relates to their daily lives and future careers.</p>
+            <p>Throughout this unit, learners will move from basic knowledge acquisition to meaningful application and ultimately to authentic transfer of learning. The lessons are structured to promote critical thinking, collaboration, and creativity. By the end of this unit, students will not only understand ${topic} but will also be able to apply their learning independently to solve problems and create innovative solutions.</p>
             
-            <h4>Introduction:</h4>
-            <p>In this learning experience, students will explore ${acq.toLowerCase()} through structured activities designed to build foundational understanding. This phase focuses on guided practice where teacher provides support as students develop new skills and knowledge.</p>
-            
-            <h4>Instructions (Step-by-Step):</h4>
+            <h3>Learning Objectives (at least 10):</h3>
             <ol>
-                <li>Read and understand the key concepts about ${acq.toLowerCase()} presented by the teacher.</li>
-                <li>Participate in the guided demonstration or example.</li>
-                <li>Work with a partner to complete the practice activity.</li>
-                <li>Share your answers with the class and discuss any challenges.</li>
-                <li>Complete the individual assessment to check understanding.</li>
+                <li>Define and explain the key concepts related to ${topic}.</li>
+                <li>Identify the important principles and components of ${topic}.</li>
+                <li>Apply concepts of ${topic} to solve basic problems.</li>
+                <li>Analyze situations where ${topic} is applied in real life.</li>
+                <li>Evaluate different approaches and strategies related to ${topic}.</li>
+                <li>Create original outputs demonstrating understanding of ${topic}.</li>
+                <li>Justify conclusions using evidence from ${topic} concepts.</li>
+                <li>Collaborate with peers to investigate ${topic} phenomena.</li>
+                <li>Communicate ideas about ${topic} clearly using appropriate terminology.</li>
+                <li>Reflect on personal learning and identify areas for growth regarding ${topic}.</li>
             </ol>
             
-            <h4>Links / Materials:</h4>
+            <h3>Essential Question:</h3>
+            <p><strong><em>How does understanding ${topic} help us navigate and improve the world around us?</em></strong></p>
+            
+            <h3>Hook Activity (Situational):</h3>
+            <p><strong>Scenario:</strong> Imagine you encounter a real-life situation that requires knowledge of ${topic}. ${generateHookScenario(topic)} Students will share initial thoughts and questions, creating curiosity and engagement before diving into the content.</p>
+            
+            <h3>Guide Questions:</h3>
             <ul>
-                <li>Presentation slides on ${acq.toLowerCase()}</li>
-                <li>Worksheets and practice exercises</li>
-                <li>Online resources and video tutorials</li>
-                <li>Manipulatives or visual aids as needed</li>
+                <li>What do you already know about ${topic}?</li>
+                <li>Where do we see ${topic} in our daily lives?</li>
+                <li>Why is it important to learn about ${topic}?</li>
+                <li>What questions do you have about ${topic}?</li>
             </ul>
             
-            <h4>Sample Assessment:</h4>
-            <p><strong>Question:</strong> Explain ${acq.toLowerCase()} in your own words and provide one original example that demonstrates understanding of this concept.</p>
-            <p><strong>Answer key:</strong> Answers will vary but should accurately reflect the definition and provide a relevant, appropriate example showing application of the concept.</p>
-            
-            <h4>In Response to Disruption:</h4>
-            <p>If face-to-face classes are disrupted, this activity can be completed asynchronously through the learning management system. Provide video tutorials, digital worksheets, and online discussion forums where students can post questions and receive feedback. Consider creating a flipped classroom model where students watch instructional videos before completing the practice activity.</p>
+            <h3>Map of Conceptual Change:</h3>
+            <p>Students will complete a pre-assessment to identify prior knowledge and misconceptions about ${topic}. Throughout the unit, they will revisit and revise their understanding, documenting how their concepts have evolved.</p>
         </div>
+
+        <!-- ==================== FIRM-UP SECTION (ACQUISITION) ==================== -->
+        <div class="lesson-section">
+            <h2>📚 FIRM-UP (Acquisition Phase)</h2>
         `;
-    }
 
-    // ==================== DEEPEN SECTION (MAKE MEANING) ====================
-    outputHTML += `
-    </div>
-    <div class="lesson-section">
-        <h2>💡 DEEPEN (Make Meaning Phase)</h2>
-    `;
+        // Generate FIRM-UP for each acquisition item
+        for(let i = 0; i < acquisitionList.length; i++){
+            const acq = acquisitionList[i].trim();
+            const lcNumber = i + 1;
+            
+            outputHTML += `
+            <div style="margin-bottom: 40px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+                <h3>LC ${lcNumber}: ${acq}</h3>
+                
+                <h4>Learning Targets:</h4>
+                <ul>
+                    <li>I can define and explain ${acq.toLowerCase()}.</li>
+                    <li>I can provide examples of ${acq.toLowerCase()} in different contexts.</li>
+                    <li>I can apply ${acq.toLowerCase()} to solve guided problems.</li>
+                </ul>
+                
+                <h4>Success Criteria:</h4>
+                <ul>
+                    <li>I have accurately defined key terms related to ${acq.toLowerCase()}.</li>
+                    <li>I have completed the activity with at least 80% accuracy.</li>
+                    <li>I can explain my reasoning and steps to a peer.</li>
+                </ul>
+                
+                <h4>Look For (Teacher Observations):</h4>
+                <ul>
+                    <li>Students using correct terminology when discussing ${acq.toLowerCase()}.</li>
+                    <li>Students making connections between new concepts and prior knowledge.</li>
+                    <li>Students asking thoughtful questions that show engagement.</li>
+                </ul>
+                
+                <h4>Activity Title: "${getActivityTitle(acq, lcNumber)}"</h4>
+                
+                <h4>Introduction:</h4>
+                <p>In this learning experience, students will explore ${acq.toLowerCase()} through structured activities designed to build foundational understanding. This phase focuses on guided practice where teacher provides support as students develop new skills and knowledge.</p>
+                
+                <h4>Instructions (Step-by-Step):</h4>
+                <ol>
+                    <li>Read and understand the key concepts about ${acq.toLowerCase()} presented by the teacher.</li>
+                    <li>Participate in the guided demonstration or example.</li>
+                    <li>Work with a partner to complete the practice activity.</li>
+                    <li>Share your answers with the class and discuss any challenges.</li>
+                    <li>Complete the individual assessment to check understanding.</li>
+                </ol>
+                
+                <h4>Links / Materials:</h4>
+                <ul>
+                    <li>Presentation slides on ${acq.toLowerCase()}</li>
+                    <li>Worksheets and practice exercises</li>
+                    <li>Online resources and video tutorials</li>
+                    <li>Manipulatives or visual aids as needed</li>
+                </ul>
+                
+                <h4>Sample Assessment:</h4>
+                <p><strong>Question:</strong> Explain ${acq.toLowerCase()} in your own words and provide one original example that demonstrates understanding of this concept.</p>
+                <p><strong>Answer key:</strong> Answers will vary but should accurately reflect the definition and provide a relevant, appropriate example showing application of the concept.</p>
+                
+                <h4>In Response to Disruption:</h4>
+                <p>If face-to-face classes are disrupted, this activity can be completed asynchronously through the learning management system. Provide video tutorials, digital worksheets, and online discussion forums where students can post questions and receive feedback. Consider creating a flipped classroom model where students watch instructional videos before completing the practice activity.</p>
+            </div>
+            `;
+        }
 
-    for(let i = 0; i < makeMeaningList.length; i++){
-        const mm = makeMeaningList[i].trim();
-        const mmNumber = i + 1;
-        
+        // ==================== DEEPEN SECTION (MAKE MEANING) ====================
         outputHTML += `
-        <div style="margin-bottom: 50px; border-top: 2px solid #cbd5e1; padding-top: 20px;">
-            <h3>LC ${mmNumber} (M): ${mm}</h3>
+        </div>
+        <div class="lesson-section">
+            <h2>💡 DEEPEN (Make Meaning Phase)</h2>
+        `;
+
+        for(let i = 0; i < makeMeaningList.length; i++){
+            const mm = makeMeaningList[i].trim();
+            const mmNumber = i + 1;
             
-            <h4>Learning Target:</h4>
-            <ul><li>I can ${mm.toLowerCase()} using evidence and logical reasoning.</li></ul>
+            outputHTML += `
+            <div style="margin-bottom: 50px; border-top: 2px solid #cbd5e1; padding-top: 20px;">
+                <h3>LC ${mmNumber} (M): ${mm}</h3>
+                
+                <h4>Learning Target:</h4>
+                <ul><li>I can ${mm.toLowerCase()} using evidence and logical reasoning.</li></ul>
+                
+                <h4>Success Criteria:</h4>
+                <ul>
+                    <li>I have provided clear and logical reasoning for my conclusions.</li>
+                    <li>I can support my claims with relevant evidence.</li>
+                    <li>I can explain why other perspectives might be less effective.</li>
+                </ul>
+                
+                <h4>Look For:</h4>
+                <ul>
+                    <li>Students using specific evidence to support claims.</li>
+                    <li>Students recognizing patterns and relationships.</li>
+                    <li>Students articulating their thought process clearly.</li>
+                </ul>
+                
+                <h4>Overview:</h4>
+                <p>This phase challenges students to go beyond basic recall and engage in higher-order thinking. Students will ${mm.toLowerCase()} while working with complex scenarios that require careful analysis and justification.</p>
+                
+                <h4>Activity 1 Title: "Case Analysis: Real-World ${topic}"</h4>
+                
+                <h4>Problem:</h4>
+                <p>A real-world scenario presents a challenge related to ${topic}. Students must analyze the situation, evaluate possible approaches, and justify their recommended course of action. ${generateCERProblem(topic)}</p>
+                
+                <h4>CER Choices:</h4>
+                <p><strong>Claim (A to D):</strong> A. Approach A is most effective | B. Approach B is most effective | C. A combination works best | D. Neither approach is suitable</p>
+                <p><strong>Evidence (A to D):</strong> A. Data supports Approach A | B. Research supports Approach B | C. Both have supporting evidence | D. Evidence is inconclusive</p>
+                <p><strong>Reasoning (A to D):</strong> A. Reasoning focuses on efficiency | B. Reasoning focuses on accuracy | C. Reasoning balances both factors | D. Reasoning identifies limitations</p>
+                
+                <h4>CER Analysis (Wrong Answers):</h4>
+                <p><strong>Claim Analysis:</strong> Option A is wrong because it overlooks important contextual factors. Option B is wrong because it focuses on only one aspect of the problem. Option D is wrong because it avoids making a decision when one is needed.</p>
+                
+                <h4>Correct Answer Recap:</h4>
+                <p><strong>Claim:</strong> Option C - A combination of approaches works best for this situation.</p>
+                <p><strong>Evidence:</strong> Research and data show that integrated approaches yield better outcomes.</p>
+                <p><strong>Reasoning:</strong> The problem has multiple dimensions requiring different strategies working together.</p>
+                
+                <h4>Activity 2 Title: "Think-Aloud: Decision Making Process"</h4>
+                
+                <h4>CER Think-Aloud Script:</h4>
+                <p><strong>Step 1: Understand the problem</strong><br>I think the main issue here is understanding how ${topic} applies to this specific situation. We need to identify key factors and constraints.</p>
+                <p><strong>Step 2: Claim</strong><br>I think the best solution involves applying principles of ${topic} to address the core challenge.</p>
+                <p><strong>Step 3: Evidence</strong><br>I think the evidence comes from multiple sources including the data provided, prior knowledge, and logical reasoning about cause and effect.</p>
+                <p><strong>Step 4: Reasoning</strong><br>I think this reasoning works because it connects the evidence directly to the claim and considers alternative explanations.</p>
+                <p><strong>Step 5: Conclusion</strong><br>I think the conclusion follows logically from the claim, evidence, and reasoning presented throughout this analysis.</p>
+                
+                <h4>Activity 3 Title: "Guided Practice: Analyzing Scenarios"</h4>
+                
+                <h4>Problem:</h4>
+                <p>Analyze a new scenario similar to Activity 1 but with different variables. ${generateCERProblem(topic)}</p>
+                
+                <h4>Step 1: Understand the problem</h4>
+                <p>I think ____ that ____. The key elements are identifying what the problem asks and what information is available.</p>
+                
+                <h4>CER Checklist (at least 10 items):</h4>
+                <ul>
+                    <li>✓ Did I restate the problem in my own words?</li>
+                    <li>✓ Did I identify what the question is asking?</li>
+                    <li>✓ Did I make a clear claim that answers the question?</li>
+                    <li>✓ Is my claim specific and focused?</li>
+                    <li>✓ Did I provide relevant evidence to support my claim?</li>
+                    <li>✓ Is my evidence accurate and from reliable sources?</li>
+                    <li>✓ Did I explain how my evidence supports my claim?</li>
+                    <li>✓ Did I consider alternative explanations?</li>
+                    <li>✓ Did I use appropriate scientific/mathematical reasoning?</li>
+                    <li>✓ Did I draw a logical conclusion based on claim, evidence, and reasoning?</li>
+                </ul>
+                
+                <h4>Activity 4 Title: "Individual Practice: Independent Analysis"</h4>
+                
+                <h4>Problem:</h4>
+                <p>Individually analyze this new scenario: ${generateCERProblem(topic)} Provide your complete CER response.</p>
+                
+                <h4>Template:</h4>
+                <p><strong>Name/s:</strong> ____________________</p>
+                <p><strong>Claim:</strong> ________________________________________</p>
+                <p><strong>Evidence:</strong> ________________________________________</p>
+                <p><strong>Reasoning:</strong> ________________________________________</p>
+                
+                <h4>CER Individual Practice Checklist:</h4>
+                <ul>
+                    <li>□ Claim clearly answers the question</li>
+                    <li>□ Evidence is specific and relevant</li>
+                    <li>□ Reasoning connects evidence to claim</li>
+                    <li>□ Writing is clear and organized</li>
+                </ul>
+                
+                <h4>Criteria for Individual Practice:</h4>
+                <ul>
+                    <li>Accuracy (40%) - Claim is correct and well-stated</li>
+                    <li>Evidence Quality (30%) - Evidence is relevant and sufficient</li>
+                    <li>Reasoning Quality (30%) - Explanation is logical and thorough</li>
+                </ul>
+                
+                <h4>In Response to Disruption:</h4>
+                <p>Provide digital CER templates through Google Forms or learning management system. Schedule virtual breakout rooms for peer discussion. Record think-aloud videos demonstrating the CER process that students can watch asynchronously.</p>
+            </div>
+            `;
+        }
+
+        // Map of Conceptual Change and Essential Question recap
+        outputHTML += `
+            <h3>Map of Conceptual Change (Review):</h3>
+            <p>After completing the Deepen activities, students revisit their initial Map of Conceptual Change from the Explore section. They document how their understanding has evolved, noting concepts they initially misunderstood and explaining their new, more accurate understanding of ${topic}.</p>
             
-            <h4>Success Criteria:</h4>
+            <h3>Essential Question (Review):</h3>
+            <p><strong><em>How does understanding ${topic} help us navigate and improve the world around us?</em></strong><br>Students write a reflection answering this question based on their learning throughout the Deepen phase.</p>
+        `;
+
+        // ==================== TRANSFER SECTION ====================
+        outputHTML += `
+        </div>
+        <div class="lesson-section">
+            <h2>🎯 TRANSFER</h2>
+            
+            <h3>Performance Standard:</h3>
+            <p>${perfStd || "The learners shall be able to apply learning to real-life situations and create authentic outputs."}</p>
+            
+            <h3>Transfer Goal:</h3>
+            <p>${transferRaw || "Create an authentic performance task demonstrating understanding and application of concepts in real-world situations."}</p>
+            
+            <h3>GRASPS Table Format:</h3>
+            <table>
+                <tr><th width="100">Goal</th><td>Create a solution/product that addresses a real-world challenge related to ${topic}.</th></tr>
+                <tr><th>Role</th><td>You are a consultant/expert tasked with solving this problem.</th></tr>
+                <tr><th>Audience</th><td>Community stakeholders / decision-makers / peers</th></tr>
+                <tr><th>Situation</th><td>A real community or school-based challenge requires application of ${topic} knowledge.</th></tr>
+                <tr><th>Product</th><td>A proposal, prototype, presentation, or innovation.</th></tr>
+                <tr><th>Standards</th><td>Accuracy, creativity, application, and clarity of communication.</th></tr>
+            </table>
+            
+            <h3>Narrative (Paragraph Form):</h3>
+            <p>You are a ${subject} expert who has been hired to address an important challenge facing your school or community. The challenge requires applying your knowledge of ${topic} to develop an effective solution. You will create a ${generateProductType()} that demonstrates your understanding and presents your recommendations to stakeholders. Your work will be evaluated on accuracy of content, creativity of approach, practical applicability, and clarity of presentation. This is an authentic task that mirrors what professionals in this field actually do when solving real problems.</p>
+            
+            <h3>GRASPS Checklist (at least 10 items):</h3>
             <ul>
-                <li>I have provided clear and logical reasoning for my conclusions.</li>
-                <li>I can support my claims with relevant evidence.</li>
-                <li>I can explain why other perspectives might be less effective.</li>
+                <li>✓ Did I clearly identify the goal of the performance task?</li>
+                <li>✓ Did I understand my role as the problem-solver?</li>
+                <li>✓ Did I identify who my target audience is?</li>
+                <li>✓ Did I analyze the situation carefully?</li>
+                <li>✓ Did I plan my product or solution before starting?</li>
+                <li>✓ Did I apply ${topic} concepts correctly in my solution?</li>
+                <li>✓ Did I consider real-world constraints and limitations?</li>
+                <li>✓ Did I create a complete and polished final product?</li>
+                <li>✓ Did I review my work against the standards?</li>
+                <li>✓ Did I reflect on what I learned through this process?</li>
             </ul>
             
-            <h4>Look For:</h4>
+            <h3>Criteria for Performance Task:</h3>
             <ul>
-                <li>Students using specific evidence to support claims.</li>
-                <li>Students recognizing patterns and relationships.</li>
-                <li>Students articulating their thought process clearly.</li>
+                <li><strong>Content Knowledge (30%)</strong> - Accurately applies ${topic} concepts and principles.</li>
+                <li><strong>Creativity & Innovation (25%)</strong> - Presents original, thoughtful approaches.</li>
+                <li><strong>Practical Application (25%)</strong> - Solution is feasible and addresses real needs.</li>
+                <li><strong>Communication (20%)</strong> - Ideas are clear, organized, and professionally presented.</li>
             </ul>
             
-            <h4>Overview:</h4>
-            <p>This phase challenges students to go beyond basic recall and engage in higher-order thinking. Students will ${mm.toLowerCase()} while working with complex scenarios that require careful analysis and justification.</p>
+            <h3>Values Integration Activity:</h3>
+            <p>Students connect ${topic} to values such as responsibility, collaboration, integrity, and excellence. They discuss how professionals in fields related to ${topic} demonstrate these values in their work and how students can embody these values in their own performance task.</p>
             
-            <h4>Activity 1 Title: "Case Analysis: Real-World ${topic}"</h4>
-            
-            <h4>Problem:</h4>
-            <p>A real-world scenario presents a challenge related to ${topic}. Students must analyze the situation, evaluate possible approaches, and justify their recommended course of action. ${generateCERProblem(topic)}</p>
-            
-            <h4>CER Choices:</h4>
-            <p><strong>Claim (A to D):</strong> A. Approach A is most effective | B. Approach B is most effective | C. A combination works best | D. Neither approach is suitable</p>
-            <p><strong>Evidence (A to D):</strong> A. Data supports Approach A | B. Research supports Approach B | C. Both have supporting evidence | D. Evidence is inconclusive</p>
-            <p><strong>Reasoning (A to D):</strong> A. Reasoning focuses on efficiency | B. Reasoning focuses on accuracy | C. Reasoning balances both factors | D. Reasoning identifies limitations</p>
-            
-            <h4>CER Analysis (Wrong Answers):</h4>
-            <p><strong>Claim Analysis:</strong> Option A is wrong because it overlooks important contextual factors. Option B is wrong because it focuses on only one aspect of the problem. Option D is wrong because it avoids making a decision when one is needed.</p>
-            
-            <h4>Correct Answer Recap:</h4>
-            <p><strong>Claim:</strong> Option C - A combination of approaches works best for this situation.</p>
-            <p><strong>Evidence:</strong> Research and data show that integrated approaches yield better outcomes.</p>
-            <p><strong>Reasoning:</strong> The problem has multiple dimensions requiring different strategies working together.</p>
-            
-            <h4>Activity 2 Title: "Think-Aloud: Decision Making Process"</h4>
-            
-            <h4>CER Think-Aloud Script:</h4>
-            <p><strong>Step 1: Understand the problem</strong><br>I think the main issue here is understanding how ${topic} applies to this specific situation. We need to identify key factors and constraints.</p>
-            <p><strong>Step 2: Claim</strong><br>I think the best solution involves applying principles of ${topic} to address the core challenge.</p>
-            <p><strong>Step 3: Evidence</strong><br>I think the evidence comes from multiple sources including the data provided, prior knowledge, and logical reasoning about cause and effect.</p>
-            <p><strong>Step 4: Reasoning</strong><br>I think this reasoning works because it connects the evidence directly to the claim and considers alternative explanations.</p>
-            <p><strong>Step 5: Conclusion</strong><br>I think the conclusion follows logically from the claim, evidence, and reasoning presented throughout this analysis.</p>
-            
-            <h4>Activity 3 Title: "Guided Practice: Analyzing Scenarios"</h4>
-            
-            <h4>Problem:</h4>
-            <p>Analyze a new scenario similar to Activity 1 but with different variables. ${generateCERProblem(topic)}</p>
-            
-            <h4>Step 1: Understand the problem</h4>
-            <p>I think ____ that ____. The key elements are identifying what the problem asks and what information is available.</p>
-            
-            <h4>CER Checklist (at least 10 items):</h4>
+            <h3>Reflection Questions:</h3>
             <ul>
-                <li>✓ Did I restate the problem in my own words?</li>
-                <li>✓ Did I identify what the question is asking?</li>
-                <li>✓ Did I make a clear claim that answers the question?</li>
-                <li>✓ Is my claim specific and focused?</li>
-                <li>✓ Did I provide relevant evidence to support my claim?</li>
-                <li>✓ Is my evidence accurate and from reliable sources?</li>
-                <li>✓ Did I explain how my evidence supports my claim?</li>
-                <li>✓ Did I consider alternative explanations?</li>
-                <li>✓ Did I use appropriate scientific/mathematical reasoning?</li>
-                <li>✓ Did I draw a logical conclusion based on claim, evidence, and reasoning?</li>
+                <li>What was the most challenging part of this lesson or task?</li>
+                <li>How has your understanding of ${topic} changed through this unit?</li>
+                <li>How can you apply what you learned about ${topic} outside of school?</li>
+                <li>What questions do you still have about ${topic}?</li>
+                <li>If you could do this task again, what would you do differently?</li>
             </ul>
             
-            <h4>Activity 4 Title: "Individual Practice: Independent Analysis"</h4>
-            
-            <h4>Problem:</h4>
-            <p>Individually analyze this new scenario: ${generateCERProblem(topic)} Provide your complete CER response.</p>
-            
-            <h4>Template:</h4>
-            <p><strong>Name/s:</strong> ____________________</p>
-            <p><strong>Claim:</strong> ________________________________________</p>
-            <p><strong>Evidence:</strong> ________________________________________</p>
-            <p><strong>Reasoning:</strong> ________________________________________</p>
-            
-            <h4>CER Individual Practice Checklist:</h4>
-            <ul>
-                <li>□ Claim clearly answers the question</li>
-                <li>□ Evidence is specific and relevant</li>
-                <li>□ Reasoning connects evidence to claim</li>
-                <li>□ Writing is clear and organized</li>
-            </ul>
-            
-            <h4>Criteria for Individual Practice:</h4>
-            <ul>
-                <li>Accuracy (40%) - Claim is correct and well-stated</li>
-                <li>Evidence Quality (30%) - Evidence is relevant and sufficient</li>
-                <li>Reasoning Quality (30%) - Explanation is logical and thorough</li>
-            </ul>
-            
-            <h4>In Response to Disruption:</h4>
-            <p>Provide digital CER templates through Google Forms or learning management system. Schedule virtual breakout rooms for peer discussion. Record think-aloud videos demonstrating the CER process that students can watch asynchronously.</p>
+            <h3>In Response to Disruption:</h3>
+            <p>For remote learning scenarios, the performance task can be submitted digitally through the learning management system. Students can create video presentations, digital portfolios, or online posters to showcase their work. Schedule virtual presentations where students share their products with peers and receive feedback. Provide digital templates, video tutorials, and one-on-one virtual check-ins to support students through the process.</p>
         </div>
         `;
-    }
 
-    // Map of Conceptual Change and Essential Question recap
-    outputHTML += `
-        <h3>Map of Conceptual Change (Review):</h3>
-        <p>After completing the Deepen activities, students revisit their initial Map of Conceptual Change from the Explore section. They document how their understanding has evolved, noting concepts they initially misunderstood and explaining their new, more accurate understanding of ${topic}.</p>
+        // Display the generated lesson plan
+        document.getElementById("output").innerHTML = outputHTML;
+        document.getElementById("loading").style.display = "none";
         
-        <h3>Essential Question (Review):</h3>
-        <p><strong><em>How does understanding ${topic} help us navigate and improve the world around us?</em></strong><br>Students write a reflection answering this question based on their learning throughout the Deepen phase.</p>
-    `;
-
-    // ==================== TRANSFER SECTION ====================
-    outputHTML += `
-    </div>
-    <div class="lesson-section">
-        <h2>🎯 TRANSFER</h2>
-        
-        <h3>Performance Standard:</h3>
-        <p>${perfStd || "The learners shall be able to apply learning to real-life situations and create authentic outputs."}</p>
-        
-        <h3>Transfer Goal:</h3>
-        <p>${transferRaw || "Create an authentic performance task demonstrating understanding and application of concepts in real-world situations."}</p>
-        
-        <h3>GRASPS Table Format:</h3>
-        <table>
-            <tr><th width="100">Goal</th><td>Create a solution/product that addresses a real-world challenge related to ${topic}.</td></tr>
-            <tr><th>Role</th><td>You are a consultant/expert tasked with solving this problem.</td></tr>
-            <tr><th>Audience</th><td>Community stakeholders / decision-makers / peers</td></tr>
-            <tr><th>Situation</th><td>A real community or school-based challenge requires application of ${topic} knowledge.</td></tr>
-            <tr><th>Product</th><td>A proposal, prototype, presentation, or innovation.</td></tr>
-            <tr><th>Standards</th><td>Accuracy, creativity, application, and clarity of communication.</td></tr>
-        </table>
-        
-        <h3>Narrative (Paragraph Form):</h3>
-        <p>You are a ${subject} expert who has been hired to address an important challenge facing your school or community. The challenge requires applying your knowledge of ${topic} to develop an effective solution. You will create a ${generateProductType()} that demonstrates your understanding and presents your recommendations to stakeholders. Your work will be evaluated on accuracy of content, creativity of approach, practical applicability, and clarity of presentation. This is an authentic task that mirrors what professionals in this field actually do when solving real problems.</p>
-        
-        <h3>GRASPS Checklist (at least 10 items):</h3>
-        <ul>
-            <li>✓ Did I clearly identify the goal of the performance task?</li>
-            <li>✓ Did I understand my role as the problem-solver?</li>
-            <li>✓ Did I identify who my target audience is?</li>
-            <li>✓ Did I analyze the situation carefully?</li>
-            <li>✓ Did I plan my product or solution before starting?</li>
-            <li>✓ Did I apply ${topic} concepts correctly in my solution?</li>
-            <li>✓ Did I consider real-world constraints and limitations?</li>
-            <li>✓ Did I create a complete and polished final product?</li>
-            <li>✓ Did I review my work against the standards?</li>
-            <li>✓ Did I reflect on what I learned through this process?</li>
-        </ul>
-        
-        <h3>Criteria for Performance Task:</h3>
-        <ul>
-            <li><strong>Content Knowledge (30%)</strong> - Accurately applies ${topic} concepts and principles.</li>
-            <li><strong>Creativity & Innovation (25%)</strong> - Presents original, thoughtful approaches.</li>
-            <li><strong>Practical Application (25%)</strong> - Solution is feasible and addresses real needs.</li>
-            <li><strong>Communication (20%)</strong> - Ideas are clear, organized, and professionally presented.</li>
-        </ul>
-        
-        <h3>Values Integration Activity:</h3>
-        <p>Students connect ${topic} to values such as responsibility, collaboration, integrity, and excellence. They discuss how professionals in fields related to ${topic} demonstrate these values in their work and how students can embody these values in their own performance task.</p>
-        
-        <h3>Reflection Questions:</h3>
-        <ul>
-            <li>What was the most challenging part of this lesson or task?</li>
-            <li>How has your understanding of ${topic} changed through this unit?</li>
-            <li>How can you apply what you learned about ${topic} outside of school?</li>
-            <li>What questions do you still have about ${topic}?</li>
-            <li>If you could do this task again, what would you do differently?</li>
-        </ul>
-        
-        <h3>In Response to Disruption:</h3>
-        <p>For remote learning scenarios, the performance task can be submitted digitally through the learning management system. Students can create video presentations, digital portfolios, or online posters to showcase their work. Schedule virtual presentations where students share their products with peers and receive feedback. Provide digital templates, video tutorials, and one-on-one virtual check-ins to support students through the process.</p>
-    </div>
-    `;
-
-    // Display the generated lesson plan
-    document.getElementById("output").innerHTML = outputHTML;
-    document.getElementById("loading").style.display = "none";
+        // Scroll to output
+        document.querySelector(".output-panel").scrollTop = 0;
+    }, 100);
 }
 
 // Helper functions
 function extractTopic(contentStd, subject){
     if(contentStd && contentStd.length > 20){
         let firstSentence = contentStd.split(".")[0];
-        if(firstSentence.length > 50) firstSentence = firstSentence.substring(0, 50);
-        return firstSentence + "...";
+        if(firstSentence.length > 60) firstSentence = firstSentence.substring(0, 60) + "...";
+        return firstSentence;
     }
     return "Core Concepts in " + subject;
 }
@@ -724,16 +921,6 @@ function generateProductType(){
     const products = ["detailed proposal", "creative presentation", "innovative prototype", "comprehensive report", "digital portfolio"];
     return products[Math.floor(Math.random() * products.length)];
 }
-
-// Show loading indicator when generating
-const originalGenerate = generateLesson;
-window.generateLesson = function(){
-    document.getElementById("loading").style.display = "block";
-    setTimeout(() => {
-        originalGenerate();
-    }, 100);
-};
 </script>
-
 </body>
 </html>
